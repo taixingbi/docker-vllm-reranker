@@ -1,4 +1,4 @@
-name: Push to Docker Hub
+name: Push reranker image to Docker Hub
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/docker-vllm-embedding-v1:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/docker-vllm-embedding-v1:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/docker-vllm-reranker-v1:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/docker-vllm-reranker-v1:${{ github.sha }}

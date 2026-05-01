@@ -1,8 +1,8 @@
 services:
-  vllm_embed:
+  vllm_reranker:
     build: .
-    image: docker-vllm-embedding-v1:local
-    container_name: vllm_embed
+    image: docker-vllm-reranker-v1:local
+    container_name: vllm_reranker
     restart: unless-stopped
     runtime: nvidia
     ipc: host
@@ -19,15 +19,15 @@ services:
       - --host
       - 0.0.0.0
       - --port
-      - "8002"
+      - ${VLLM_PORT:-8002}
       - --dtype
-      - half
+      - ${VLLM_DTYPE:-half}
       - --max-model-len
-      - "512"
+      - ${VLLM_MAX_MODEL_LEN:-512}
       - --max-num-seqs
-      - "64"
+      - ${VLLM_MAX_NUM_SEQS:-64}
       - --gpu-memory-utilization
-      - "0.01"
+      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.01}
 
 volumes:
   hf-cache:
