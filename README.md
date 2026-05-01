@@ -1,6 +1,6 @@
 # docker-vllm-reranker
 
-Dockerized [vLLM](https://github.com/vllm-project/vllm) OpenAI-compatible server running on port **8002** with `BAAI/bge-reranker-v2-m3` by default (`--dtype half`, fp16).
+Runs [vLLM](https://github.com/vllm-project/vllm)’s OpenAI-compatible HTTP API in Docker for **cross-encoder scoring / reranking**, default model **`BAAI/bge-reranker-v2-m3`**, listening on **`8002`**, with **`--task score`**, **`--dtype half`** (fp16), and **`--gpu-memory-utilization` default `0.15`**.
 
 ## Publish image (GitHub Actions)
 
@@ -9,32 +9,54 @@ On push to `main` or manual **workflow_dispatch**, [.github/workflows/docker-pus
 - `<dockerhub_user>/docker-vllm-reranker-v1:latest`
 - `<dockerhub_user>/docker-vllm-reranker-v1:<git_sha>`
 
-Repository secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`.
+Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`.
 
 ## Local or GPU host (Compose)
 
-Requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
+Requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
 
 ```bash
 docker compose up -d
+docker compose logs -f vllm_reranker
 ```
 
-Optional: create a `.env` in the repo root with:
+### Environment (optional `.env`)
 
-- `EMBED_MODEL` (defaults to `BAAI/bge-reranker-v2-m3`)
-- `HUGGING_FACE_HUB_TOKEN` (if required for model access)
-- `VLLM_PORT` (defaults to `8002`)
-- `VLLM_DTYPE` (defaults to `half`)
-- `VLLM_MAX_MODEL_LEN` (defaults to `512`)
-- `VLLM_MAX_NUM_SEQS` (defaults to `64`)
-- `VLLM_GPU_MEMORY_UTILIZATION` (defaults to `0.01`)
+| Variable | Role | Default |
+|----------|------|---------|
+| `RERANK_MODEL` | Hugging Face model id for `--model` | `BAAI/bge-reranker-v2-m3` |
+| `EMBED_MODEL` | Legacy alias: used only if `RERANK_MODEL` is unset | _(see compose)_ |
+| `VLLM_TASK` | vLLM `--task` (this image expects **`score`** for `/v1/score`) | `score` |
+| `HUGGING_FACE_HUB_TOKEN` | Token if the hub needs auth | _(empty)_ |
+| `VLLM_PORT` | `--port` and host port mapping | `8002` |
+| `VLLM_DTYPE` | `--dtype` | `half` |
+| `VLLM_MAX_MODEL_LEN` | `--max-model-len` | `512` |
+| `VLLM_MAX_NUM_SEQS` | `--max-num-seqs` | `64` |
+| `VLLM_GPU_MEMORY_UTILIZATION` | `--gpu-memory-utilization` | `0.15` |
 
-Weights are cached in the Compose volume `hf-cache`.
+Weights cache: Compose volume `hf-cache` → `/root/.cache/huggingface`.
 
-## Try request
+**Port mapping:** [docker-compose.yml](docker-compose.yml) uses `${VLLM_PORT:-8002}` on both sides of `ports:` so host and container stay aligned when you change the port.
+
+## Try the API
+
+Health (when exposed by vLLM):
 
 ```bash
-curl "http://127.0.0.1:8002/v1/embeddings" \
-  -H "Content-Type: application/json" \
-  -d '{"model":"BAAI/bge-reranker-v2-m3","input":"hello world"}'
+curl -sS "http://127.0.0.1:8002/health"
 ```
+
+**Score / rerank** (pairs of texts — not `/v1/embeddings`):
+
+```bash
+curl "http://127.0.0.1:8002/v1/score" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "BAAI/bge-reranker-v2-m3",
+    "pairs": [
+      {"text_1": "What is Paris?", "text_2": "Paris is the capital of France."}
+    ]
+  }'
+```
+
+Use `http://127.0.0.1:8002` as the base URL for clients calling this vLLM server. Request shapes follow your vLLM version’s OpenAI-compatible extensions for scoring.

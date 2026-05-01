@@ -7,7 +7,7 @@ services:
     runtime: nvidia
     ipc: host
     ports:
-      - "8002:8002"
+      - "${VLLM_PORT:-8002}:${VLLM_PORT:-8002}"
     volumes:
       - hf-cache:/root/.cache/huggingface
     environment:
@@ -15,7 +15,9 @@ services:
     entrypoint: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
     command:
       - --model
-      - ${EMBED_MODEL:-BAAI/bge-reranker-v2-m3}
+      - ${RERANK_MODEL:-${EMBED_MODEL:-BAAI/bge-reranker-v2-m3}}
+      - --task
+      - ${VLLM_TASK:-score}
       - --host
       - 0.0.0.0
       - --port
@@ -27,7 +29,7 @@ services:
       - --max-num-seqs
       - ${VLLM_MAX_NUM_SEQS:-64}
       - --gpu-memory-utilization
-      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.01}
+      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.15}
 
 volumes:
   hf-cache:
