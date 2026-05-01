@@ -1,6 +1,6 @@
-# vLLM embeddings (Docker)
+# docker-vllm-reranker
 
-OpenAI-compatible embeddings on port **8002** (`/v1/embeddings`), using [vLLM](https://github.com/vllm-project/vllm) with `BAAI/bge-reranker-v2-m3` by default.
+Dockerized [vLLM](https://github.com/vllm-project/vllm) OpenAI-compatible server running on port **8002** with `BAAI/bge-reranker-v2-m3` by default (`--dtype half`, fp16).
 
 ## Publish image (GitHub Actions)
 
@@ -19,13 +19,17 @@ Requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-nat
 docker compose up -d
 ```
 
-Optional: create a `.env` in the repo root with `EMBED_MODEL` and/or `HUGGING_FACE_HUB_TOKEN` if you need them (see [docker-compose.yml](docker-compose.yml)). Weights are cached in the Compose volume `hf-cache`.
+Optional: create a `.env` in the repo root with:
 
-## Try embeddings
+- `EMBED_MODEL` (defaults to `BAAI/bge-reranker-v2-m3`)
+- `HUGGING_FACE_HUB_TOKEN` (if required for model access)
+
+Weights are cached in the Compose volume `hf-cache`.
+
+## Try request
 
 ```bash
 curl "http://127.0.0.1:8002/v1/embeddings" \
   -H "Content-Type: application/json" \
   -d '{"model":"BAAI/bge-reranker-v2-m3","input":"hello world"}'
 ```
-# docker-vllm-reranker

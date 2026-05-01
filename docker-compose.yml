@@ -1,0 +1,33 @@
+services:
+  vllm_embed:
+    build: .
+    image: docker-vllm-embedding-v1:local
+    container_name: vllm_embed
+    restart: unless-stopped
+    runtime: nvidia
+    ipc: host
+    ports:
+      - "8002:8002"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    environment:
+      HUGGING_FACE_HUB_TOKEN: ${HUGGING_FACE_HUB_TOKEN:-}
+    entrypoint: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+    command:
+      - --model
+      - ${EMBED_MODEL:-BAAI/bge-reranker-v2-m3}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8002"
+      - --dtype
+      - half
+      - --max-model-len
+      - "512"
+      - --max-num-seqs
+      - "64"
+      - --gpu-memory-utilization
+      - "0.01"
+
+volumes:
+  hf-cache:
