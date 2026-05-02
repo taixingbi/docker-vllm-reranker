@@ -29,7 +29,7 @@ services:
       - --max-model-len
       - ${VLLM_MAX_MODEL_LEN:-512}
       - --gpu-memory-utilization
-      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.15}
+      - ${VLLM_GPU_MEMORY_UTILIZATION:-0.01}
 
 volumes:
   hf-cache:
