@@ -20,8 +20,6 @@ Requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud
 ```bash
 docker pull taixingbi/docker-vllm-reranker-v1:latest
 
-docker rm -f vllm_reranker
-
 docker run -d \
   --name vllm_reranker \
   --restart unless-stopped \
@@ -44,6 +42,8 @@ The image [Dockerfile](Dockerfile) sets **`--model`**, **`--runner pooling`**, *
 **Upstream-equivalent** (same vLLM flags as this image; add `--host 0.0.0.0 --port 8002` if you map host `8002` to container `8002`):
 
 ```bash
+docker rm -f vllm_reranker
+
 docker run -d \
   --name vllm_reranker \
   --gpus all \
