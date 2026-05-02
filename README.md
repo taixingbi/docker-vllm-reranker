@@ -20,6 +20,8 @@ Requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud
 ```bash
 docker pull taixingbi/docker-vllm-reranker-v1:latest
 
+docker rm -f vllm_reranker
+
 docker run -d \
   --name vllm_reranker \
   --restart unless-stopped \
