@@ -16,8 +16,10 @@ services:
     command:
       - --model
       - ${RERANK_MODEL:-${EMBED_MODEL:-BAAI/bge-reranker-v2-m3}}
-      - --task
-      - ${VLLM_TASK:-score}
+      - --runner
+      - ${VLLM_RUNNER:-pooling}
+      - --convert
+      - ${VLLM_CONVERT:-classify}
       - --host
       - 0.0.0.0
       - --port
@@ -26,8 +28,6 @@ services:
       - ${VLLM_DTYPE:-half}
       - --max-model-len
       - ${VLLM_MAX_MODEL_LEN:-512}
-      - --max-num-seqs
-      - ${VLLM_MAX_NUM_SEQS:-64}
       - --gpu-memory-utilization
       - ${VLLM_GPU_MEMORY_UTILIZATION:-0.15}
 
